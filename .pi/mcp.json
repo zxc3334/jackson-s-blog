@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "toolPrefix": "none",
+    "hostConfigDiscovery": "off"
+  },
+  "mcpServers": {
+    "agent_os": {
+      "command": "/home/jackson/.nvm/versions/node/v22.23.2/bin/node",
+      "args": ["/home/jackson/ao-30-approval-gate/scripts/agent-os-mcp-shim.mjs"],
+      "directTools": true,
+      "lifecycle": "keep-alive"
+    }
+  }
+}
