@@ -1,0 +1,93 @@
+---
+import '../styles/global.css';
+import { SITE, NAV_LINKS, url } from '../lib/site';
+
+interface Props {
+	title?: string;
+	description?: string;
+	canonical?: string;
+}
+
+const { title, description, canonical } = Astro.props;
+
+/**
+ * 主题控制器：在 <head> 中以阻塞式内联脚本运行，先于首屏渲染设置 data-theme，
+ * 杜绝亮暗切换时的首屏闪烁（FOUC）。
+ */
+const THEME_INIT_SCRIPT = `(() => {
+  try {
+    const stored = localStorage.getItem('theme');
+    const theme = stored === 'light' || stored === 'dark'
+      ? stored
+      : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.theme = theme;
+  } catch {
+    document.documentElement.dataset.theme = 'light';
+  }
+})();`;
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description ?? SITE.description} />
+		<link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+		<link rel="alternate" type="application/rss+xml" title={SITE.title} href={url('rss.xml')} />
+		{canonical && <link rel="canonical" href={canonical} />}
+		<title>{title ? `${title} · ${SITE.title}` : SITE.title}</title>
+		<script is:inline set:html={THEME_INIT_SCRIPT} />
+	</head>
+	<body>
+		<div class="wrapper">
+			<header class="site-header">
+				<a class="site-title" href={url()}>{SITE.title}</a>
+				<nav class="site-nav" aria-label="主导航">
+					{
+						NAV_LINKS.map((link) => {
+							const href = url(link.href);
+							return (
+								<a href={href} aria-current={Astro.url.pathname === href ? 'page' : undefined}>
+									{link.label}
+								</a>
+							);
+						})
+					}
+				</nav>
+				<button
+					type="button"
+					class="theme-toggle"
+					id="theme-toggle"
+					aria-label="切换亮暗主题"
+					title="切换亮暗主题"
+				>
+					<span class="icon-light" aria-hidden="true">☀</span>
+					<span class="icon-dark" aria-hidden="true">☾</span>
+				</button>
+			</header>
+			<main>
+				<slot />
+			</main>
+			<footer class="site-footer">
+				<span>© {new Date().getFullYear()} {SITE.author}</span>
+				<span>
+					<a href={url('rss.xml')}>RSS 订阅</a>
+				</span>
+			</footer>
+		</div>
+		<script>
+			const toggle = document.getElementById('theme-toggle');
+			toggle?.addEventListener('click', () => {
+				const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+				document.documentElement.dataset.theme = next;
+				try {
+					localStorage.setItem('theme', next);
+				} catch {
+					/* 隐私模式下 localStorage 不可写，主题本次会话内仍然生效 */
+				}
+			});
+		</script>
+	</body>
+</html>

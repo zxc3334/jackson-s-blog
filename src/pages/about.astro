@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE, url } from '../lib/site';
+---
+
+<BaseLayout title="关于" description={`关于 ${SITE.author}`}>
+	<h1>关于我</h1>
+	<div class="prose about-prose">
+		<p>
+			你好，我是 {SITE.author}。这里记录我在工程实践中的技术沉淀、项目复盘与零散想法。
+			写作的目标很简单：把踩过的坑和想清楚的结论留下来，让下一次少走一点弯路。
+		</p>
+
+		<h2>我在做什么</h2>
+		<ul>
+			<li>后端与基础设施方向的工程实践</li>
+			<li>把复杂系统拆成可验证的小步骤</li>
+			<li>用最小的技术栈解决真实问题</li>
+		</ul>
+
+		<h2>关于这个站点</h2>
+		<p>
+			站点基于 <a href="https://astro.build" rel="noopener">Astro</a> 构建为纯静态产物，
+			使用原生 CSS 排版，无后端服务与数据库。文章以 Markdown 维护，
+			推送到 <code>main</code> 分支后由 GitHub Actions 自动构建并发布到 GitHub Pages。
+		</p>
+
+		<h2>联系我</h2>
+		<ul class="social-list">
+			<li><a href="https://github.com/zxc3334" rel="noopener">GitHub</a></li>
+			<li><a href={url('rss.xml')}>RSS 订阅</a></li>
+		</ul>
+	</div>
+</BaseLayout>

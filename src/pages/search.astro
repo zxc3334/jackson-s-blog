@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { formatDate, getPublishedPosts, makeExcerpt, plainText, postPath } from '../lib/posts';
+import { url } from '../lib/site';
+
+const posts = await getPublishedPosts();
+
+// 构建期生成静态检索索引：搜索过程零网络请求，草稿文章不会进入索引。
+const index = posts.map((post) => ({
+	title: post.data.title,
+	url: postPath(post),
+	date: formatDate(post.data.date),
+	tags: post.data.tags.join(' '),
+	excerpt: makeExcerpt(post, 160),
+	body: plainText(post.body ?? '').slice(0, 1200),
+}));
+---
+
+<BaseLayout title="搜索" description="站内文章即时搜索">
+	<h1>搜索</h1>
+	<p class="page-intro">
+		输入关键词即时筛选，全部在浏览器本地完成，共收录 {index.length} 篇文章 ·
+		<a href={url('posts/')}>浏览全部文章</a>
+	</p>
+	<label for="search-input" class="post-meta">关键词</label>
+	<input
+		id="search-input"
+		class="search-input"
+		type="search"
+		placeholder="例如：Astro、标签、构建"
+		autocomplete="off"
+	/>
+	<p class="search-status" id="search-status" role="status" aria-live="polite"></p>
+	<ul class="post-list" id="search-results"></ul>
+	<script type="application/json" id="search-index" set:html={JSON.stringify(index)} />
+	<script>
+		const indexEl = document.getElementById('search-index');
+		const input = document.getElementById('search-input') as HTMLInputElement | null;
+		const results = document.getElementById('search-results');
+		const status = document.getElementById('search-status');
+		const data = JSON.parse(indexEl?.textContent ?? '[]') as Array<{
+			title: string;
+			url: string;
+			date: string;
+			tags: string;
+			excerpt: string;
+			body: string;
+		}>;
+
+		const escapeHtml = (value: string) =>
+			value.replace(/[&<>"]/g, (char) => `&#${char.charCodeAt(0)};`);
+
+		/** 命中处高亮，输入内容先转义再包裹标记，避免注入 */
+		const highlight = (text: string, query: string) => {
+			if (!query) return escapeHtml(text);
+			const at = text.toLowerCase().indexOf(query.toLowerCase());
+			if (at < 0) return escapeHtml(text);
+			return (
+				escapeHtml(text.slice(0, at)) +
+				`<mark class="search-hit">${escapeHtml(text.slice(at, at + query.length))}</mark>` +
+				escapeHtml(text.slice(at + query.length))
+			);
+		};
+
+		const render = (query: string) => {
+			const keyword = query.trim().toLowerCase();
+			const hits = keyword
+				? data.filter((post) =>
+						`${post.title} ${post.tags} ${post.excerpt} ${post.body}`.toLowerCase().includes(keyword),
+					)
+				: data;
+
+			if (status) {
+				status.textContent = keyword
+					? `匹配到 ${hits.length} 篇`
+					: `共 ${data.length} 篇，输入关键词开始筛选`;
+			}
+			if (!results) return;
+			results.innerHTML = hits
+				.map(
+					(post) => `<li>
+						<a class="post-title" href="${encodeURI(post.url)}">${highlight(post.title, keyword)}</a>
+						<span class="post-date">${post.date}</span>
+						<p class="post-excerpt">${highlight(post.excerpt, keyword)}</p>
+					</li>`,
+				)
+				.join('');
+		};
+
+		render('');
+		input?.addEventListener('input', () => render(input.value));
+	</script>
+</BaseLayout>

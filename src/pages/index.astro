@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostList from '../components/PostList.astro';
+import { getPublishedPosts } from '../lib/posts';
+import { absoluteUrl, SITE } from '../lib/site';
+
+const posts = await getPublishedPosts();
+---
+
+<BaseLayout title="首页" canonical={absoluteUrl('', Astro.site)}>
+	<h1>{SITE.title}</h1>
+	<p class="page-intro">{SITE.description}</p>
+	<h2 class="section-title">最新文章</h2>
+	<PostList posts={posts} showExcerpt />
+</BaseLayout>

@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostList from '../../components/PostList.astro';
+import { getPublishedPosts } from '../../lib/posts';
+import { SITE, url } from '../../lib/site';
+
+const posts = await getPublishedPosts();
+const tags = new Set(posts.flatMap((post) => post.data.tags));
+---
+
+<BaseLayout title="文章" description={`${SITE.title} 的全部已发布文章`}>
+	<h1>文章</h1>
+	<p class="page-intro">
+		共 {posts.length} 篇，覆盖 {tags.size} 个标签 · <a href={url('tags/')}>按标签浏览</a>
+	</p>
+	<PostList posts={posts} />
+</BaseLayout>

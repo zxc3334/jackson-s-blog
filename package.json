@@ -1,0 +1,22 @@
+{
+  "name": "personal-blog",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "node scripts/check-dist.mjs"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "astro": "^7.3.3"
+  },
+  "devDependencies": {
+    "fast-xml-parser": "^5.11.1"
+  }
+}

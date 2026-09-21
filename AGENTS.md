@@ -22,3 +22,6 @@
 
 > 踩坑后追加一行：现象 → 原因 → 正确做法。
 
+- 站内链接全部 404（如 `/jackson-s-blogtags/`）→ Astro 的 `import.meta.env.BASE_URL` 不带尾斜杠，`BASE_URL + 'tags/'` 拼出死链 → 统一走 `src/lib/site.ts` 的 `url()` 拼路径，不要直接字符串拼接。
+- `pnpm install` 报 `ERR_PNPM_IGNORED_BUILDS: esbuild` → `pnpm-workspace.yaml` 的 `allowBuilds.esbuild` 还是占位符 → 改为 `esbuild: true`。
+

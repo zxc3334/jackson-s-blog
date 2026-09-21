@@ -1,0 +1,39 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatDate, getPublishedPosts, readingTime, tagPath } from '../../lib/posts';
+import { absoluteUrl, url } from '../../lib/site';
+
+export async function getStaticPaths() {
+	const posts = await getPublishedPosts();
+	return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const date = formatDate(post.data.date);
+const canonical = absoluteUrl(`posts/${post.id}/`, Astro.site);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description} canonical={canonical}>
+	<article class="prose">
+		<header class="post-header">
+			<h1>{post.data.title}</h1>
+			<p class="post-meta">
+				<time datetime={date}>{date}</time>
+				· {readingTime(post.body ?? '')}
+			</p>
+			<ul class="tag-list">
+				{
+					post.data.tags.map((tag) => (
+						<li>
+							<a href={tagPath(tag)}>{tag}</a>
+						</li>
+					))
+				}
+			</ul>
+		</header>
+		<Content />
+	</article>
+	<p class="post-meta"><a href={url('posts/')}>← 返回文章列表</a></p>
+</BaseLayout>
